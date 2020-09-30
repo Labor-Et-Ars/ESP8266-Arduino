@@ -121,25 +121,31 @@ bool MDNSResponder::_sendMDNSMessage_Multicast(MDNSResponder::stcMDNSSendParamet
 
     bool    bResult = false;
 
-    IPAddress   fromIPAddress;
-    fromIPAddress = _getResponseMulticastInterface();
-    m_pUDPContext->setMulticastInterface(fromIPAddress);
+    for (netif* pNetIf = netif_list; pNetIf; pNetIf = pNetIf->next)
+    {
+    	if (netif_is_up(pNetIf))
+    	{
+			IPAddress   fromIPAddress;
+			//fromIPAddress = _getResponseMulticastInterface();
+			fromIPAddress = pNetIf->ip_addr;
+			m_pUDPContext->setMulticastInterface(fromIPAddress);
 
 #ifdef MDNS_IP4_SUPPORT
-    IPAddress   toMulticastAddress(DNS_MQUERY_IPV4_GROUP_INIT);
+			IPAddress   toMulticastAddress(DNS_MQUERY_IPV4_GROUP_INIT);
 #endif
 #ifdef MDNS_IP6_SUPPORT
-    //TODO: set multicast address
-    IPAddress   toMulticastAddress(DNS_MQUERY_IPV6_GROUP_INIT);
+			//TODO: set multicast address
+			IPAddress   toMulticastAddress(DNS_MQUERY_IPV6_GROUP_INIT);
 #endif
-    DEBUG_EX_INFO(DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] _sendMDNSMessage_Multicast: Will send to '%s'.\n"), toMulticastAddress.toString().c_str()););
-    bResult = ((_prepareMDNSMessage(p_rSendParameter, fromIPAddress)) &&
-               (m_pUDPContext->send(toMulticastAddress, DNS_MQUERY_PORT)));
+			DEBUG_EX_INFO(DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] _sendMDNSMessage_Multicast: Will send to '%s'.\n"), toMulticastAddress.toString().c_str()););
+			bResult = ((_prepareMDNSMessage(p_rSendParameter, fromIPAddress)) &&
+					   (m_pUDPContext->send(toMulticastAddress, DNS_MQUERY_PORT)));
 
-    DEBUG_EX_ERR(if (!bResult)
-{
-    DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] _sendMDNSMessage_Multicast: FAILED!\n"));
-    });
+			DEBUG_EX_ERR(if (!bResult){
+			DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] _sendMDNSMessage_Multicast: FAILED!\n"));
+			});
+    	}
+    }
     return bResult;
 }
 
@@ -157,7 +163,8 @@ bool MDNSResponder::_prepareMDNSMessage(MDNSResponder::stcMDNSSendParameter& p_r
 {
     DEBUG_EX_INFO(DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] _prepareMDNSMessage\n")););
     bool    bResult = true;
-
+    p_rSendParameter.m_u16Offset = 0;
+    p_rSendParameter.m_pDomainCacheItems = nullptr;
     // Prepare header; count answers
     stcMDNS_MsgHeader  msgHeader(p_rSendParameter.m_u16ID, p_rSendParameter.m_bResponse, 0, p_rSendParameter.m_bAuthorative);
     // If this is a response, the answers are anwers,
