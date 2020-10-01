@@ -1184,6 +1184,7 @@ protected:
         ~stcMDNSSendParameter(void);
 
         bool clear(void);
+        bool clearCachedNames(void);
 
         bool shiftOffset(uint16_t p_u16Shift);
 

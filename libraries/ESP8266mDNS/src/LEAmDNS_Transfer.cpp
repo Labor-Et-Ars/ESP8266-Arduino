@@ -163,8 +163,8 @@ bool MDNSResponder::_prepareMDNSMessage(MDNSResponder::stcMDNSSendParameter& p_r
 {
     DEBUG_EX_INFO(DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] _prepareMDNSMessage\n")););
     bool    bResult = true;
-    p_rSendParameter.m_u16Offset = 0;
-    p_rSendParameter.m_pDomainCacheItems = nullptr;
+    p_rSendParameter.clearCachedNames(); // Need to remove cached names, p_SendParameter might have been used before on other interface
+
     // Prepare header; count answers
     stcMDNS_MsgHeader  msgHeader(p_rSendParameter.m_u16ID, p_rSendParameter.m_bResponse, 0, p_rSendParameter.m_bAuthorative);
     // If this is a response, the answers are anwers,
