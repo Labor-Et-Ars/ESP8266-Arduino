@@ -89,7 +89,7 @@ bool MDNSResponder::_sendMDNSMessage(MDNSResponder::stcMDNSSendParameter& p_rSen
         });
         IPAddress   ipRemote;
         ipRemote = m_pUDPContext->getRemoteAddress();
-        bResult = ((_prepareMDNSMessage(p_rSendParameter, _getResponseMulticastInterface())) &&
+        bResult = ((_prepareMDNSMessage(p_rSendParameter, m_pUDPContext->getInputNetif()->ip_addr)) &&
                    (m_pUDPContext->send(ipRemote, m_pUDPContext->getRemotePort())));
     }
     else                                // Multicast response
