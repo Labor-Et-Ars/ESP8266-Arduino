@@ -179,19 +179,23 @@ bool MDNSResponder::_allocUDPContext(void)
     //TODO: set multicast address (lwip_joingroup() is IPv4 only at the time of writing)
     multicast_addr.addr = DNS_MQUERY_IPV6_GROUP_INIT;
 #endif
-    if (ERR_OK == igmp_joingroup(ip_2_ip4(&m_netif->ip_addr), ip_2_ip4(&multicast_addr)))
+
+    for (netif* pNetIf = netif_list; pNetIf; pNetIf = pNetIf->next)
     {
-        m_pUDPContext = new UdpContext;
-        m_pUDPContext->ref();
-
-        if (m_pUDPContext->listen(IP4_ADDR_ANY, DNS_MQUERY_PORT))
-        {
-            m_pUDPContext->setMulticastTTL(MDNS_MULTICAST_TTL);
-            m_pUDPContext->onRx(std::bind(&MDNSResponder::_callProcess, this));
-
-            bResult = m_pUDPContext->connect(&multicast_addr, DNS_MQUERY_PORT);
-        }
+    	if (netif_is_up(pNetIf))
+    	{
+    		igmp_joingroup_netif(pNetIf, ip_2_ip4(&multicast_addr));
+    	}
     }
+	m_pUDPContext = new UdpContext;
+	m_pUDPContext->ref();
+
+	if (m_pUDPContext->listen(IP4_ADDR_ANY, DNS_MQUERY_PORT))
+	{
+		m_pUDPContext->setMulticastTTL(MDNS_MULTICAST_TTL);
+		m_pUDPContext->onRx(std::bind(&MDNSResponder::_callProcess, this));
+	}
+
     return bResult;
 }
 

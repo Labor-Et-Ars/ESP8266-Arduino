@@ -1205,7 +1205,6 @@ protected:
     MDNSDynamicServiceTxtCallbackFunc m_fnServiceTxtCallback;
     bool                            m_bPassivModeEnabled;
     stcProbeInformation             m_HostProbeInformation;
-    const netif*                    m_netif; // network interface to run on
 
     /** CONTROL **/
     /* MAINTENANCE */
@@ -1259,11 +1258,6 @@ protected:
     bool _sendMDNSQuery(const stcMDNS_RRDomain& p_QueryDomain,
                         uint16_t p_u16QueryType,
                         stcMDNSServiceQuery::stcAnswer* p_pKnownAnswers = 0);
-
-    const IPAddress _getResponseMulticastInterface() const
-    {
-        return IPAddress(m_netif->ip_addr);
-    }
 
     uint8_t _replyMaskForHost(const stcMDNS_RRHeader& p_RRHeader,
                               bool* p_pbFullNameMatch = 0) const;
