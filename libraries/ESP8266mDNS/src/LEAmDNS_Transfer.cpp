@@ -90,7 +90,7 @@ bool MDNSResponder::_sendMDNSMessage(MDNSResponder::stcMDNSSendParameter& p_rSen
         IPAddress   ipRemote;
         ipRemote = m_pUDPContext->getRemoteAddress();
         bResult = ((_prepareMDNSMessage(p_rSendParameter, m_pUDPContext->getInputNetif()->ip_addr)) &&
-                   (m_pUDPContext->send(ipRemote, m_pUDPContext->getRemotePort())));
+                   (m_pUDPContext->sendTimeout(ipRemote, m_pUDPContext->getRemotePort(),MDNS_UDPCONTEXT_TIMEOUT)));
     }
     else                                // Multicast response
     {
@@ -139,7 +139,7 @@ bool MDNSResponder::_sendMDNSMessage_Multicast(MDNSResponder::stcMDNSSendParamet
 #endif
 			DEBUG_EX_INFO(DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] _sendMDNSMessage_Multicast: Will send to '%s'.\n"), toMulticastAddress.toString().c_str()););
 			bResult = ((_prepareMDNSMessage(p_rSendParameter, fromIPAddress)) &&
-					   (m_pUDPContext->send(toMulticastAddress, DNS_MQUERY_PORT)));
+					   (m_pUDPContext->sendTimeout(toMulticastAddress, DNS_MQUERY_PORT,MDNS_UDPCONTEXT_TIMEOUT)));
 
 			DEBUG_EX_ERR(if (!bResult){
 			DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] _sendMDNSMessage_Multicast: FAILED!\n"));
