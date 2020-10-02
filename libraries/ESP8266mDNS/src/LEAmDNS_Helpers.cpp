@@ -168,8 +168,6 @@ bool MDNSResponder::_allocUDPContext(void)
 {
     DEBUG_EX_INFO(DEBUG_OUTPUT.println("[MDNSResponder] _allocUDPContext"););
 
-    bool    bResult = false;
-
     _releaseUDPContext();
 
 #ifdef MDNS_IP4_SUPPORT
@@ -196,7 +194,7 @@ bool MDNSResponder::_allocUDPContext(void)
 		m_pUDPContext->onRx(std::bind(&MDNSResponder::_callProcess, this));
 	}
 
-    return bResult;
+    return true;
 }
 
 /*
