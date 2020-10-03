@@ -178,13 +178,8 @@ bool MDNSResponder::_allocUDPContext(void)
     multicast_addr.addr = DNS_MQUERY_IPV6_GROUP_INIT;
 #endif
 
-    for (netif* pNetIf = netif_list; pNetIf; pNetIf = pNetIf->next)
-    {
-    	if (netif_is_up(pNetIf))
-    	{
-    		igmp_joingroup_netif(pNetIf, ip_2_ip4(&multicast_addr));
-    	}
-    }
+    _joinMulticastGroups();
+
 	m_pUDPContext = new UdpContext;
 	m_pUDPContext->ref();
 
@@ -207,6 +202,7 @@ bool MDNSResponder::_releaseUDPContext(void)
     {
         m_pUDPContext->unref();
         m_pUDPContext = 0;
+        _leaveMulticastGroups();
     }
     return true;
 }

@@ -189,6 +189,8 @@ public:
     {
         return begin(p_strHostname.c_str(), p_IPAddress, p_u32TTL);
     }
+    bool _joinMulticastGroups(void);
+    bool _leaveMulticastGroups(void);
 
     // Finish MDNS processing
     bool close(void);
