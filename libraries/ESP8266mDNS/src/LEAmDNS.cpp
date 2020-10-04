@@ -62,12 +62,7 @@ MDNSResponder::MDNSResponder(void)
         m_pUDPContext(0),
         m_pcHostname(0),
         m_pServiceQueries(0),
-        m_fnServiceTxtCallback(0),
-#ifdef ENABLE_ESP_MDNS_RESPONDER_PASSIV_MODE
-        m_bPassivModeEnabled(true)
-#else
-        m_bPassivModeEnabled(false)
-#endif
+        m_fnServiceTxtCallback(0)
 {
 }
 
@@ -132,9 +127,6 @@ bool MDNSResponder::close(void)
 
     if (0 != m_pUDPContext)
     {
-        m_GotIPHandler.reset();			// reset WiFi event callbacks.
-        m_DisconnectedHandler.reset();
-
         _announce(false, true);
         _resetProbeStatus(false);   // Stop probing
         _releaseServiceQueries();
@@ -1254,11 +1246,6 @@ bool MDNSResponder::notifyAPChange(void)
 */
 bool MDNSResponder::update(void)
 {
-
-    if (m_bPassivModeEnabled)
-    {
-        m_bPassivModeEnabled = false;
-    }
     return _process(true);
 }
 

@@ -1206,10 +1206,7 @@ protected:
     UdpContext*                     m_pUDPContext;
     char*                           m_pcHostname;
     stcMDNSServiceQuery*            m_pServiceQueries;
-    WiFiEventHandler                m_DisconnectedHandler;
-    WiFiEventHandler                m_GotIPHandler;
     MDNSDynamicServiceTxtCallbackFunc m_fnServiceTxtCallback;
-    bool                            m_bPassivModeEnabled;
     stcProbeInformation             m_HostProbeInformation;
 
     /** CONTROL **/
