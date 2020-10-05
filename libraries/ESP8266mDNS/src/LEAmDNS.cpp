@@ -88,10 +88,8 @@ MDNSResponder::~MDNSResponder(void)
     Finally the responder is (re)started
 
 */
-bool MDNSResponder::begin(const char* p_pcHostname, const IPAddress& p_IPAddress, uint32_t p_u32TTL)
+bool MDNSResponder::begin(const char* p_pcHostname, const IPAddress& /*p_IPAddress*/, uint32_t /*p_u32TTL*/)
 {
-
-    (void)p_u32TTL; // ignored
     bool    bResult = false;
 
 	if (_setHostname(p_pcHostname))
@@ -101,8 +99,10 @@ bool MDNSResponder::begin(const char* p_pcHostname, const IPAddress& p_IPAddress
 
 	LwipIntf::stateUpCB
 		(
-			[this](netif* nf)
+			[this](netif* intf)
 			{
+			    (void)intf;
+                DEBUG_EX_INFO(DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] new Interface '%c%c' is UP! restarting\n"), intf->name[0], intf->name[1]));
 				_restart();
 			}
 		);
@@ -1308,12 +1308,12 @@ bool MDNSResponder::_joinMulticastGroups(void)
             ip_addr_t   multicast_addr_V4 = DNS_MQUERY_IPV4_GROUP_INIT;
             if (!(pNetIf->flags & NETIF_FLAG_IGMP))
             {
-                DEBUG_EX_ERR(DEBUG_OUTPUT.printf_P(PSTR("%s _createHost: Setting flag: flags & NETIF_FLAG_IGMP\n"), _DH()););
+                DEBUG_EX_ERR(DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] _createHost: Setting flag: flags & NETIF_FLAG_IGMP\n")););
                 pNetIf->flags |= NETIF_FLAG_IGMP;
 
                 if (ERR_OK != igmp_start(pNetIf))
                 {
-                    DEBUG_EX_ERR(DEBUG_OUTPUT.printf_P(PSTR("%s _createHost: igmp_start FAILED!\n"), _DH()););
+                    DEBUG_EX_ERR(DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] _createHost: igmp_start FAILED!\n")););
                 }
             }
 
@@ -1323,8 +1323,8 @@ bool MDNSResponder::_joinMulticastGroups(void)
             }
             else
             {
-                DEBUG_EX_ERR(DEBUG_OUTPUT.printf_P(PSTR("%s _createHost: igmp_joingroup_netif(" NETIFID_STR ": %s) FAILED!\n"),
-                                                   _DH(), NETIFID_VAL(pNetIf), IPAddress(multicast_addr_V4).toString().c_str()););
+                DEBUG_EX_ERR(DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] _createHost: igmp_joingroup_netif(" NETIFID_STR ": %s) FAILED!\n"),
+                                                   NETIFID_VAL(pNetIf), IPAddress(multicast_addr_V4).toString().c_str()););
             }
 #endif
 
@@ -1332,8 +1332,8 @@ bool MDNSResponder::_joinMulticastGroups(void)
             ip_addr_t   multicast_addr_V6 = DNS_MQUERY_IPV6_GROUP_INIT;
             bResult = ((bResult) &&
                        (ERR_OK == mld6_joingroup_netif(pNetIf, ip_2_ip6(&multicast_addr_V6))));
-            DEBUG_EX_ERR_IF(!bResult, DEBUG_OUTPUT.printf_P(PSTR("%s _createHost: mld6_joingroup_netif (" NETIFID_STR ") FAILED!\n"),
-                            _DH(), NETIFID_VAL(pNetIf)));
+            DEBUG_EX_ERR_IF(!bResult, DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] _createHost: mld6_joingroup_netif (" NETIFID_STR ") FAILED!\n"),
+                            NETIFID_VAL(pNetIf)));
 #endif
         }
     }
