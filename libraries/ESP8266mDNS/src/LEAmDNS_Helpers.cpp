@@ -169,15 +169,6 @@ bool MDNSResponder::_allocUDPContext(void)
     DEBUG_EX_INFO(DEBUG_OUTPUT.println("[MDNSResponder] _allocUDPContext"););
 
     _releaseUDPContext();
-
-#ifdef MDNS_IP4_SUPPORT
-    ip_addr_t   multicast_addr = DNS_MQUERY_IPV4_GROUP_INIT;
-#endif
-#ifdef MDNS_IP6_SUPPORT
-    //TODO: set multicast address (lwip_joingroup() is IPv4 only at the time of writing)
-    multicast_addr.addr = DNS_MQUERY_IPV6_GROUP_INIT;
-#endif
-
     _joinMulticastGroups();
 
 	m_pUDPContext = new UdpContext;
@@ -188,8 +179,12 @@ bool MDNSResponder::_allocUDPContext(void)
 		m_pUDPContext->setMulticastTTL(MDNS_MULTICAST_TTL);
 		m_pUDPContext->onRx(std::bind(&MDNSResponder::_callProcess, this));
 	}
+	else
+	{
+		return false;
+	}
 
-    return true;
+	return true;
 }
 
 /*
