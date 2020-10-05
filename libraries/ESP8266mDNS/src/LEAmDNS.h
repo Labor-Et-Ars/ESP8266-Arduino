@@ -189,6 +189,8 @@ public:
     {
         return begin(p_strHostname.c_str(), p_IPAddress, p_u32TTL);
     }
+    bool _joinMulticastGroups(void);
+    bool _leaveMulticastGroups(void);
 
     // Finish MDNS processing
     bool close(void);
@@ -1204,10 +1206,7 @@ protected:
     UdpContext*                     m_pUDPContext;
     char*                           m_pcHostname;
     stcMDNSServiceQuery*            m_pServiceQueries;
-    WiFiEventHandler                m_DisconnectedHandler;
-    WiFiEventHandler                m_GotIPHandler;
     MDNSDynamicServiceTxtCallbackFunc m_fnServiceTxtCallback;
-    bool                            m_bPassivModeEnabled;
     stcProbeInformation             m_HostProbeInformation;
 
     /** CONTROL **/

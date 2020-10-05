@@ -27,7 +27,8 @@
 
 #include "ESP8266mDNS.h"
 #include "LEAmDNS_Priv.h"
-
+#include <LwipIntf.h> // LwipIntf::stateUpCB()
+#include "lwip/igmp.h"
 
 namespace esp8266
 {
@@ -61,12 +62,7 @@ MDNSResponder::MDNSResponder(void)
         m_pUDPContext(0),
         m_pcHostname(0),
         m_pServiceQueries(0),
-        m_fnServiceTxtCallback(0),
-#ifdef ENABLE_ESP_MDNS_RESPONDER_PASSIV_MODE
-        m_bPassivModeEnabled(true)
-#else
-        m_bPassivModeEnabled(false)
-#endif
+        m_fnServiceTxtCallback(0)
 {
 }
 
@@ -98,21 +94,23 @@ bool MDNSResponder::begin(const char* p_pcHostname, const IPAddress& p_IPAddress
     (void)p_u32TTL; // ignored
     bool    bResult = false;
 
-    if (0 == m_pUDPContext)
-    {
-        if (_setHostname(p_pcHostname))
-        {
-            bResult = _restart();
-        }
-        DEBUG_EX_ERR(if (!bResult)
-        {
-        DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] begin: FAILED for '%s'!\n"), (p_pcHostname ? : "-"));
-        });
-    }
-    else
-    {
-        DEBUG_EX_INFO(DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] begin: Ignoring multiple calls to begin (Ignored host domain: '%s')!\n"), (p_pcHostname ? : "-")););
-    }
+	if (_setHostname(p_pcHostname))
+	{
+		bResult = _restart();
+	}
+
+	LwipIntf::stateUpCB
+		(
+			[this](netif* nf)
+			{
+				_restart();
+			}
+		);
+	DEBUG_EX_ERR(if (!bResult)
+	{
+	DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] begin: FAILED for '%s'!\n"), (p_pcHostname ? : "-"));
+	});
+
     return bResult;
 }
 
@@ -129,9 +127,6 @@ bool MDNSResponder::close(void)
 
     if (0 != m_pUDPContext)
     {
-        m_GotIPHandler.reset();			// reset WiFi event callbacks.
-        m_DisconnectedHandler.reset();
-
         _announce(false, true);
         _resetProbeStatus(false);   // Stop probing
         _releaseServiceQueries();
@@ -1251,11 +1246,6 @@ bool MDNSResponder::notifyAPChange(void)
 */
 bool MDNSResponder::update(void)
 {
-
-    if (m_bPassivModeEnabled)
-    {
-        m_bPassivModeEnabled = false;
-    }
     return _process(true);
 }
 
@@ -1295,6 +1285,94 @@ MDNSResponder::hMDNSService MDNSResponder::enableArduino(uint16_t p_u16Port,
     }
     return hService;
 }
+
+/*
+
+    MULTICAST GROUPS
+
+*/
+
+/*
+    clsLEAmDNS2_Host::_joinMulticastGroups
+*/
+bool MDNSResponder::_joinMulticastGroups(void)
+{
+    bool    bResult = false;
+
+    // Join multicast group(s)
+    for (netif* pNetIf = netif_list; pNetIf; pNetIf = pNetIf->next)
+    {
+        if (netif_is_up(pNetIf))
+        {
+#ifdef MDNS_IPV4_SUPPORT
+            ip_addr_t   multicast_addr_V4 = DNS_MQUERY_IPV4_GROUP_INIT;
+            if (!(pNetIf->flags & NETIF_FLAG_IGMP))
+            {
+                DEBUG_EX_ERR(DEBUG_OUTPUT.printf_P(PSTR("%s _createHost: Setting flag: flags & NETIF_FLAG_IGMP\n"), _DH()););
+                pNetIf->flags |= NETIF_FLAG_IGMP;
+
+                if (ERR_OK != igmp_start(pNetIf))
+                {
+                    DEBUG_EX_ERR(DEBUG_OUTPUT.printf_P(PSTR("%s _createHost: igmp_start FAILED!\n"), _DH()););
+                }
+            }
+
+            if ((ERR_OK == igmp_joingroup_netif(pNetIf, ip_2_ip4(&multicast_addr_V4))))
+            {
+                bResult = true;
+            }
+            else
+            {
+                DEBUG_EX_ERR(DEBUG_OUTPUT.printf_P(PSTR("%s _createHost: igmp_joingroup_netif(" NETIFID_STR ": %s) FAILED!\n"),
+                                                   _DH(), NETIFID_VAL(pNetIf), IPAddress(multicast_addr_V4).toString().c_str()););
+            }
+#endif
+
+#ifdef MDNS_IPV6_SUPPORT
+            ip_addr_t   multicast_addr_V6 = DNS_MQUERY_IPV6_GROUP_INIT;
+            bResult = ((bResult) &&
+                       (ERR_OK == mld6_joingroup_netif(pNetIf, ip_2_ip6(&multicast_addr_V6))));
+            DEBUG_EX_ERR_IF(!bResult, DEBUG_OUTPUT.printf_P(PSTR("%s _createHost: mld6_joingroup_netif (" NETIFID_STR ") FAILED!\n"),
+                            _DH(), NETIFID_VAL(pNetIf)));
+#endif
+        }
+    }
+    return bResult;
+}
+
+/*
+    clsLEAmDNS2_Host::_leaveMulticastGroups
+*/
+bool MDNSResponder::_leaveMulticastGroups()
+{
+    bool    bResult = false;
+
+    for (netif* pNetIf = netif_list; pNetIf; pNetIf = pNetIf->next)
+    {
+        if (netif_is_up(pNetIf))
+        {
+            bResult = true;
+
+            // Leave multicast group(s)
+#ifdef MDNS_IPV4_SUPPORT
+            ip_addr_t   multicast_addr_V4 = DNS_MQUERY_IPV4_GROUP_INIT;
+            if (ERR_OK != igmp_leavegroup_netif(pNetIf, ip_2_ip4(&multicast_addr_V4)))
+            {
+                DEBUG_EX_ERR(DEBUG_OUTPUT.printf_P(PSTR("\n")););
+            }
+#endif
+#ifdef MDNS_IPV6_SUPPORT
+            ip_addr_t   multicast_addr_V6 = DNS_MQUERY_IPV6_GROUP_INIT;
+            if (ERR_OK != mld6_leavegroup_netif(pNetIf, ip_2_ip6(&multicast_addr_V6)/*&(multicast_addr_V6.u_addr.ip6)*/))
+            {
+                DEBUG_EX_ERR(DEBUG_OUTPUT.printf_P(PSTR("\n")););
+            }
+#endif
+        }
+    }
+    return bResult;
+}
+
 
 
 } //namespace MDNSImplementation

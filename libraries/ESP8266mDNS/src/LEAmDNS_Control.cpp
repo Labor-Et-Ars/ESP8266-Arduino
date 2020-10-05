@@ -187,8 +187,7 @@ bool MDNSResponder::_parseQuery(const MDNSResponder::stcMDNS_MsgHeader& p_MsgHea
         {
             // Define host replies, BUT only answer queries after probing is done
             u8HostOrServiceReplies =
-                sendParameter.m_u8HostReplyMask |= (((m_bPassivModeEnabled) ||
-                                                    (ProbingStatus_Done == m_HostProbeInformation.m_ProbingStatus))
+                sendParameter.m_u8HostReplyMask |= (((ProbingStatus_Done == m_HostProbeInformation.m_ProbingStatus))
                                                     ? _replyMaskForHost(questionRR.m_Header, 0)
                                                     : 0);
             DEBUG_EX_INFO(if (u8HostOrServiceReplies)
@@ -217,8 +216,7 @@ bool MDNSResponder::_parseQuery(const MDNSResponder::stcMDNS_MsgHeader& p_MsgHea
             for (stcMDNSService* pService = m_pServices; pService; pService = pService->m_pNext)
             {
                 // Define service replies, BUT only answer queries after probing is done
-                uint8_t u8ReplyMaskForQuestion = (((m_bPassivModeEnabled) ||
-                                                   (ProbingStatus_Done == pService->m_ProbeInformation.m_ProbingStatus))
+                uint8_t u8ReplyMaskForQuestion = (((ProbingStatus_Done == pService->m_ProbeInformation.m_ProbingStatus))
                                                   ? _replyMaskForService(questionRR.m_Header, *pService, 0)
                                                   : 0);
                 u8HostOrServiceReplies |= (pService->m_u8ReplyMask |= u8ReplyMaskForQuestion);
