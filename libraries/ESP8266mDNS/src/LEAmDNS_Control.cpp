@@ -356,16 +356,12 @@ bool MDNSResponder::_parseQuery(const MDNSResponder::stcMDNS_MsgHeader& p_MsgHea
                     {
                         // IP4 address was asked for
 #ifdef MDNS_IP4_SUPPORT
-#if 0
-// TODO Check how V2 handles this
                         if ((AnswerType_A == pKnownRRAnswer->answerType()) &&
-                                (((stcMDNS_RRAnswerA*)pKnownRRAnswer)->m_IPAddress == _getResponseMulticastInterface()))
+                                (((stcMDNS_RRAnswerA*)pKnownRRAnswer)->m_IPAddress == m_pUDPContext->getInputNetif()->ip_addr))
                         {
-
                             DEBUG_EX_INFO(DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] _parseQuery: IP4 address already known... skipping!\n")););
                             sendParameter.m_u8HostReplyMask &= ~ContentFlag_A;
                         }   // else: RData NOT IP4 length !!
-#endif
 #endif
                     }
                     else if (u8HostMatchMask & ContentFlag_AAAA)
@@ -395,8 +391,8 @@ bool MDNSResponder::_parseQuery(const MDNSResponder::stcMDNS_MsgHeader& p_MsgHea
 #ifdef MDNS_IP4_SUPPORT
                         if (AnswerType_A == pKnownRRAnswer->answerType())
                         {
-//                            IPAddress   localIPAddress(_getResponseMulticastInterface()); TODO : check solution
-                        	IPAddress   localIPAddress (m_pUDPContext->getInputNetif()->ip_addr);
+
+                        	IPAddress localIPAddress (m_pUDPContext->getInputNetif()->ip_addr);
                             if (((stcMDNS_RRAnswerA*)pKnownRRAnswer)->m_IPAddress == localIPAddress)
                             {
                                 // SAME IP address -> We've received an old message from ourselfs (same IP)

@@ -1293,7 +1293,7 @@ MDNSResponder::hMDNSService MDNSResponder::enableArduino(uint16_t p_u16Port,
 */
 
 /*
-    clsLEAmDNS2_Host::_joinMulticastGroups
+    MDNSResponder::_joinMulticastGroups
 */
 bool MDNSResponder::_joinMulticastGroups(void)
 {
