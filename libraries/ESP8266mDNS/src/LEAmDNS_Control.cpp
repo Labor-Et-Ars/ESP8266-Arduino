@@ -86,7 +86,7 @@ bool MDNSResponder::_process(bool p_bUserContext)
     else
     {
         bResult =  _updateProbeStatus() &&              // Probing
-                  _checkServiceQueryCache();           // Service query cache check
+                   _checkServiceQueryCache();           // Service query cache check
     }
     return bResult;
 }
@@ -392,7 +392,7 @@ bool MDNSResponder::_parseQuery(const MDNSResponder::stcMDNS_MsgHeader& p_MsgHea
                         if (AnswerType_A == pKnownRRAnswer->answerType())
                         {
 
-                        	IPAddress localIPAddress (m_pUDPContext->getInputNetif()->ip_addr);
+                            IPAddress localIPAddress(m_pUDPContext->getInputNetif()->ip_addr);
                             if (((stcMDNS_RRAnswerA*)pKnownRRAnswer)->m_IPAddress == localIPAddress)
                             {
                                 // SAME IP address -> We've received an old message from ourselfs (same IP)
@@ -2000,15 +2000,15 @@ uint8_t MDNSResponder::_replyMaskForHost(const MDNSResponder::stcMDNS_RRHeader& 
             stcMDNS_RRDomain    reverseIP4Domain;
             for (netif* pNetIf = netif_list; pNetIf; pNetIf = pNetIf->next)
             {
-            	if (netif_is_up(pNetIf))
-            	{
-            		if ((_buildDomainForReverseIP4(pNetIf->ip_addr, reverseIP4Domain)) &&
-            				(p_RRHeader.m_Domain == reverseIP4Domain))
-            		{
-            			// Reverse domain match
-            			u8ReplyMask |= ContentFlag_PTR_IP4;
-            		}
-            	}
+                if (netif_is_up(pNetIf))
+                {
+                    if ((_buildDomainForReverseIP4(pNetIf->ip_addr, reverseIP4Domain)) &&
+                            (p_RRHeader.m_Domain == reverseIP4Domain))
+                    {
+                        // Reverse domain match
+                        u8ReplyMask |= ContentFlag_PTR_IP4;
+                    }
+                }
             }
 #endif
 #ifdef MDNS_IP6_SUPPORT

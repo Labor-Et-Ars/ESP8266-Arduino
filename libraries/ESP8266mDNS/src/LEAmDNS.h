@@ -165,7 +165,7 @@ namespace MDNSImplementation
 #define MDNS_QUERYSERVICES_WAIT_TIME    1000
 
 /*
- Timeout for udpContext->sendtimeout()
+    Timeout for udpContext->sendtimeout()
 */
 #define MDNS_UDPCONTEXT_TIMEOUT  50
 

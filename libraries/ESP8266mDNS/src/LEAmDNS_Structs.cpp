@@ -2402,12 +2402,12 @@ bool MDNSResponder::stcMDNSSendParameter::clear(void)
 
     m_bCacheFlush = true;
 
-	while (m_pQuestions)
-	{
-		stcMDNS_RRQuestion* pNext = m_pQuestions->m_pNext;
-		delete m_pQuestions;
-		m_pQuestions = pNext;
-	}
+    while (m_pQuestions)
+    {
+        stcMDNS_RRQuestion* pNext = m_pQuestions->m_pNext;
+        delete m_pQuestions;
+        m_pQuestions = pNext;
+    }
 
     return clearCachedNames();;
 }
@@ -2419,15 +2419,15 @@ bool MDNSResponder::stcMDNSSendParameter::clearCachedNames(void)
 
     m_u16Offset = 0;
 
-	while (m_pDomainCacheItems)
-	{
-		stcDomainCacheItem* pNext = m_pDomainCacheItems->m_pNext;
-		delete m_pDomainCacheItems;
-		m_pDomainCacheItems = pNext;
-	}
-	m_pDomainCacheItems = nullptr;
+    while (m_pDomainCacheItems)
+    {
+        stcDomainCacheItem* pNext = m_pDomainCacheItems->m_pNext;
+        delete m_pDomainCacheItems;
+        m_pDomainCacheItems = pNext;
+    }
+    m_pDomainCacheItems = nullptr;
 
-	return true;
+    return true;
 }
 
 /*

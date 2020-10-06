@@ -171,20 +171,20 @@ bool MDNSResponder::_allocUDPContext(void)
     _releaseUDPContext();
     _joinMulticastGroups();
 
-	m_pUDPContext = new UdpContext;
-	m_pUDPContext->ref();
+    m_pUDPContext = new UdpContext;
+    m_pUDPContext->ref();
 
-	if (m_pUDPContext->listen(IP4_ADDR_ANY, DNS_MQUERY_PORT))
-	{
-		m_pUDPContext->setMulticastTTL(MDNS_MULTICAST_TTL);
-		m_pUDPContext->onRx(std::bind(&MDNSResponder::_callProcess, this));
-	}
-	else
-	{
-		return false;
-	}
+    if (m_pUDPContext->listen(IP4_ADDR_ANY, DNS_MQUERY_PORT))
+    {
+        m_pUDPContext->setMulticastTTL(MDNS_MULTICAST_TTL);
+        m_pUDPContext->onRx(std::bind(&MDNSResponder::_callProcess, this));
+    }
+    else
+    {
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 /*

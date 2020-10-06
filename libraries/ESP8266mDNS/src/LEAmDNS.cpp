@@ -92,24 +92,24 @@ bool MDNSResponder::begin(const char* p_pcHostname, const IPAddress& /*p_IPAddre
 {
     bool    bResult = false;
 
-	if (_setHostname(p_pcHostname))
-	{
-		bResult = _restart();
-	}
+    if (_setHostname(p_pcHostname))
+    {
+        bResult = _restart();
+    }
 
-	LwipIntf::stateUpCB
-		(
-			[this](netif* intf)
-			{
-			    (void)intf;
-                DEBUG_EX_INFO(DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] new Interface '%c%c' is UP! restarting\n"), intf->name[0], intf->name[1]));
-				_restart();
-			}
-		);
-	DEBUG_EX_ERR(if (!bResult)
-	{
-	DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] begin: FAILED for '%s'!\n"), (p_pcHostname ? : "-"));
-	});
+    LwipIntf::stateUpCB
+    (
+        [this](netif * intf)
+    {
+        (void)intf;
+        DEBUG_EX_INFO(DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] new Interface '%c%c' is UP! restarting\n"), intf->name[0], intf->name[1]));
+        _restart();
+    }
+    );
+    DEBUG_EX_ERR(if (!bResult)
+{
+    DEBUG_OUTPUT.printf_P(PSTR("[MDNSResponder] begin: FAILED for '%s'!\n"), (p_pcHostname ? : "-"));
+    });
 
     return bResult;
 }
